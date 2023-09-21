@@ -1,0 +1,8 @@
+com\mycompany\toywhats\Message.class
+com\mycompany\toywhats\Server.class
+com\mycompany\toywhats\Chat.class
+com\mycompany\toywhats\Authenticator.class
+com\mycompany\toywhats\Crypto.class
+com\mycompany\toywhats\ToyWhats.class
+com\mycompany\toywhats\User.class
+com\mycompany\toywhats\Utils.class
