@@ -18,6 +18,10 @@ import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.binary.Hex;
 import de.taimos.totp.TOTP;
 import java.io.FileOutputStream;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  *
@@ -33,12 +37,21 @@ public class Authenticator {
 
     }
     
-    private static String generateSecretKey() {
-        SecureRandom random = new SecureRandom();
-        byte[] bytes = new byte[20];
-        random.nextBytes(bytes);
+    private static String generateSecretKey(String phone, byte[] salt) {
+        int iterations = 2000;
+        PBEKeySpec spec = new PBEKeySpec(phone.toCharArray(), 
+                salt, iterations, 160);
+        SecretKeyFactory pbkdf2 = null;
+        byte[] derivedPass = null;
+        try {
+            pbkdf2 = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512", "BCFIPS");
+            SecretKey sk = pbkdf2.generateSecret(spec);
+            derivedPass = sk.getEncoded();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Base32 base32 = new Base32();
-        return base32.encodeToString(bytes);
+        return base32.encodeToString(derivedPass);
     }
     
     public static void createQRCode(String barCodeData, String filePath, int height, int width)
@@ -50,6 +63,7 @@ public class Authenticator {
         }
 
     }
+    
         
     private static String getGoogleAuthenticatorBarCode(String secretKey, String account, String issuer) {
         try {
@@ -62,15 +76,16 @@ public class Authenticator {
         }
     }
     
-    public static boolean authenticate(String phone){
+    public static boolean authenticate(String login, String phone,  byte[] salt){
 
         try {
 
             // Cria chave secreta simétrica
-            String secret = generateSecretKey();
+            
+            String secret = generateSecretKey(phone, salt);
             String TOTPcode = getTOTPCode(secret);
 
-            String barCodeUrl = getGoogleAuthenticatorBarCode(secret, phone, "ToyWhats");
+            String barCodeUrl = getGoogleAuthenticatorBarCode(secret, login, "ToyWhats");
 
             int width = 246;
             int height = 246;
@@ -87,11 +102,7 @@ public class Authenticator {
 
             String code = scanner.nextLine();
 
-            if(code.equals(getTOTPCode(secret))) {
-                return true;
-            } else {
-                return false;
-            }
+            return code.equals(getTOTPCode(secret));
         } catch (WriterException | IOException ex) {
             System.out.println(ex);
             return false;

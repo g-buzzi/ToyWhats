@@ -50,7 +50,10 @@ public class Server {
         if(getUserByPhone(phone) != null){
             return null;
         }
-        User user = new User(login, passwordScrypt, phone, salt);
+        byte[] calculatedPassword = Crypto.computeSCRYPT(Utils.toString(passwordScrypt), salt);
+        byte[] authenticatorSalt = Crypto.generateSalt();
+        User user = new User(login, calculatedPassword, phone, salt, authenticatorSalt);
+        
         users.add(user);
         saveUsers();
         return user;
@@ -83,13 +86,19 @@ public class Server {
         return null;
     }
     
-    public User login(String login, byte[] passwrodScrypt){
+    public User login(String login, byte[] passwordScrypt){
         User user = getUser(login);
-        if(user == null || ! Hex.encodeHexString(user.getPassword()).equals(Hex.encodeHexString(passwrodScrypt))){
+        if(user == null){
             System.out.println("Senha ou usuário incorreto");
             return null;
         }
-        if(Authenticator.authenticate(user.getPhone())){
+        byte[] calculatedPassword = Crypto.computeSCRYPT(Utils.toString(passwordScrypt), user.getSalt());
+        if(!Hex.encodeHexString(user.getPassword()).equals(Hex.encodeHexString(calculatedPassword))){
+            System.out.println("Senha ou usuário incorreto");
+            return null;
+        }
+        
+        if(Authenticator.authenticate(user.getLogin(), user.getPhone(), user.getAuthenticatorSalt())){
             return user;
         }
         System.out.println("Autenticação falhou");
@@ -182,9 +191,5 @@ public class Server {
         catch (IOException ex) {
             System.out.println(ex);
         }
-    }
-    
-    private boolean authenticate(String phone){
-        return true;
     }
 }

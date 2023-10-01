@@ -14,12 +14,14 @@ public class User implements Serializable{
     private byte[] passwordScrypt;
     private String phone;
     private byte[] salt;
+    private byte[] authenticatorSalt;
     
-    public User(String newLogin, byte[] newPasswordScrypt, String newPhone, byte[] newSalt){
+    public User(String newLogin, byte[] newPasswordScrypt, String newPhone, byte[] newSalt, byte[] newAuthenticatorSalt){
         login = newLogin;
         passwordScrypt = newPasswordScrypt;
         phone = newPhone;
         salt = newSalt;
+        authenticatorSalt = newAuthenticatorSalt;
     }
     
     public String getLogin(){
@@ -36,5 +38,9 @@ public class User implements Serializable{
             
     public byte[] getSalt(){
         return salt;
+    }
+    
+    public byte[] getAuthenticatorSalt(){
+        return authenticatorSalt;
     }
 }
