@@ -33,7 +33,6 @@ public class Crypto {
     private static byte[] useScryptKDF(char[] password,
         byte [] salt, int costParameter, int blocksize, int parallelizationParam ) {
                 
-        
         KDFCalculator<Scrypt.Parameters> calculator
                 = new Scrypt.KDFFactory()
                         .createKDFCalculator(
@@ -48,7 +47,7 @@ public class Crypto {
         int addProvider;
         addProvider = Security.addProvider(new BouncyCastleFipsProvider());
         
-        int costParameter = 2048; // exemplo: 2048 (afeta uso de memória e CPU)
+        int costParameter = 2048;
         int blocksize = 8; // exemplo: 8
         int parallelizationParam = 1; // exemplo: 1
         
